@@ -7,10 +7,13 @@ public static class IMongoDatabaseExtensions
 {
     public static async Task<bool> HasCollectionAsync(
         this IMongoDatabase database,
-        string collectionsName
+        string collectionsName,
+        CancellationToken token = default
     )
     {
-        return (await database.ListCollectionNamesAsync()).ToList().Contains(collectionsName);
+        return (await database.ListCollectionNamesAsync(cancellationToken: token))
+            .ToList()
+            .Contains(collectionsName);
     }
 
     public static bool HasCollection(this IMongoDatabase database, string collectionsName)
@@ -20,15 +23,16 @@ public static class IMongoDatabaseExtensions
 
     public static async Task<bool> TryCreateCollectionsAsync(
         this IMongoDatabase database,
-        string collectionsName
+        string collectionsName,
+        CancellationToken token = default
     )
     {
-        if (await database.HasCollectionAsync(collectionsName))
+        if (await database.HasCollectionAsync(collectionsName, token))
         {
             return false;
         }
 
-        await database.CreateCollectionAsync(collectionsName);
+        await database.CreateCollectionAsync(collectionsName, cancellationToken: token);
         return true;
     }
 
@@ -46,14 +50,15 @@ public static class IMongoDatabaseExtensions
 
     public static async Task<bool> TryDropCollectionsAsync(
         this IMongoDatabase database,
-        string collectionsName
+        string collectionsName,
+        CancellationToken token = default
     )
     {
-        if (!await database.HasCollectionAsync(collectionsName))
+        if (!await database.HasCollectionAsync(collectionsName, token))
         {
             return false;
         }
-        await database.DropCollectionAsync(collectionsName);
+        await database.DropCollectionAsync(collectionsName, cancellationToken: token);
         return true;
     }
 
@@ -61,22 +66,26 @@ public static class IMongoDatabaseExtensions
         this IMongoDatabase database,
         string collectionsName,
         BsonDocument currentValue,
-        BsonDocument newValue
+        BsonDocument newValue,
+        CancellationToken token = default
     )
     {
-        if (!await database.HasCollectionAsync(collectionsName))
+        if (!await database.HasCollectionAsync(collectionsName, token))
         {
             return false;
         }
 
         var collections = database.GetCollection<BsonDocument>(collectionsName);
 
-        if ((await collections.FindAsync(currentValue)).ToList().Count() == 0)
+        if (
+            (await collections.FindAsync(currentValue, cancellationToken: token)).ToList().Count()
+            == 0
+        )
         {
             return false;
         }
 
-        await collections.UpdateOneAsync(currentValue, newValue);
+        await collections.UpdateOneAsync(currentValue, newValue, cancellationToken: token);
 
         return true;
     }

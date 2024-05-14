@@ -1,7 +1,8 @@
-using System;
 using IQGroupTestTask;
 using IQGroupTestTask.Components;
 using MongoDB.Driver;
+
+var cancellationTokenSource = new CancellationTokenSource();
 
 try
 {
@@ -13,6 +14,7 @@ try
 
     builder
         .Services.AddLogging(builder => builder.AddConsole())
+        .AddSingleton(cancellationTokenSource)
         .AddSingleton<MongoDatabaseUserService>();
 
     ArgumentNullException.ThrowIfNullOrEmpty(mongoClientLink);
@@ -43,6 +45,7 @@ try
 }
 catch (Exception ex)
 {
+    cancellationTokenSource.Cancel();
     Console.WriteLine(ex.Message);
     Console.WriteLine("Press any key to exit app...");
     Console.ReadKey();

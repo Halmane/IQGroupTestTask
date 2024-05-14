@@ -9,11 +9,17 @@ public class MongoDatabaseUserService
     private readonly MongoClient _client;
     private readonly IMongoDatabase? _database;
     private readonly IMongoCollection<BsonDocument>? _collection;
+    private readonly CancellationToken _token;
 
-    public MongoDatabaseUserService(ILogger<MongoDatabaseUserService> logger, MongoClient client)
+    public MongoDatabaseUserService(
+        ILogger<MongoDatabaseUserService> logger,
+        MongoClient client,
+        CancellationTokenSource cancellationTokenSource
+    )
     {
         _logger = logger;
         _client = client;
+        _token = cancellationTokenSource.Token;
 
         try
         {
@@ -52,7 +58,11 @@ public class MongoDatabaseUserService
             }
             var bsonDocument = new BsonDocument { { "name", name }, { "surname", surname } };
 
-            if ((await _collection.FindAsync(bsonDocument)).ToList().Count != 0)
+            if (
+                (await _collection.FindAsync(bsonDocument, cancellationToken: _token))
+                    .ToList()
+                    .Count != 0
+            )
             {
                 message = "User has been found";
                 throw new Exception(message);
