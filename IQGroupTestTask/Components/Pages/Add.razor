@@ -1,0 +1,32 @@
+﻿@page "/"
+@using MongoDB.Bson
+@using MongoDB.Driver
+@rendermode InteractiveServer
+@inject MongoDBUserService mongoDBUserService
+
+<form>
+    <label>
+        Введите имя
+        <input type="text" @bind="@name" @oninput="@((text) => { name = (string)text.Value!;})">
+    </label>
+</form>
+<form>
+    <label>
+        Введите фамилию
+        <input type="text" @bind="@surname" @oninput="@((text) => { surname = (string)text.Value!;})">
+    </label>
+</form>
+<button class="btn btn-primary" @onclick="AddUser">Запись данных</button>
+<p role="status">@message</p>
+
+
+@code {
+    private string message = "";
+    private string name =  "";
+    private string surname = "";
+
+    private void AddUser()
+    {
+        mongoDBUserService.AddUser(name, surname, out message);
+    }
+}
