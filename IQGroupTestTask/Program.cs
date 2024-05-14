@@ -1,16 +1,28 @@
 using IQGroupTestTask;
 using IQGroupTestTask.Components;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+var mongoClientLink = builder.Configuration.GetSection("MongoClientLink").Value;
 
-builder
-    .Services.AddLogging(builder => builder.AddConsole())
-    .AddSingleton(new MongoClient())
-    .AddSingleton<MongoDatabaseUserService>();
+if (string.IsNullOrEmpty(mongoClientLink))
+{
+    builder
+        .Services.AddLogging(builder => builder.AddConsole())
+        .AddSingleton(new MongoClient())
+        .AddSingleton<MongoDatabaseUserService>();
+}
+else
+{
+    builder
+        .Services.AddLogging(builder => builder.AddConsole())
+        .AddSingleton(new MongoClient(mongoClientLink))
+        .AddSingleton<MongoDatabaseUserService>();
+}
 
 var app = builder.Build();
 
