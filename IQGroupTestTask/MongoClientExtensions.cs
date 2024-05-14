@@ -41,7 +41,7 @@ public static class MongoClientExtensions
             return false;
         }
 
-        await db.RenameCollectionAsync(currentCollectionName, newCollectionName, token);
+        await db.RenameCollectionAsync(currentCollectionName, newCollectionName, cancellationToken: token);
 
         return true;
     }
@@ -66,7 +66,7 @@ public static class MongoClientExtensions
             throw new Exception("Collections does not exist");
         }
 
-        await db.RenameCollectionAsync(currentCollectionName, newCollectionName, token);
+        await db.RenameCollectionAsync(currentCollectionName, newCollectionName, cancellationToken: token);
     }
 
     public static async Task CreateDatabaseAsync(
