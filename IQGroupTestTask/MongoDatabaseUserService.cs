@@ -3,14 +3,14 @@ using MongoDB.Driver;
 
 namespace IQGroupTestTask;
 
-public class MongoDBUserService
+public class MongoDatabaseUserService
 {
     private readonly Logger _logger;
     private readonly MongoClient _client;
     private readonly IMongoDatabase? _database;
     private readonly IMongoCollection<BsonDocument>? _collection;
 
-    public MongoDBUserService(Logger logger, MongoClient client)
+    public MongoDatabaseUserService(Logger logger, MongoClient client)
     {
         _logger = logger;
         _client = client;

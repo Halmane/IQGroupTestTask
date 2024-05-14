@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace IQGroupTestTask;
 
@@ -27,6 +28,30 @@ public static class IMongoDatabaseExtensions
             return false;
         }
         database.DropCollection(collectionsName);
+        return true;
+    }
+
+    public static bool TryUpdateValue(
+        this IMongoDatabase database,
+        string collectionsName,
+        BsonDocument currentValue,
+        BsonDocument newValue
+    )
+    {
+        if (!database.HasCollection(collectionsName))
+        {
+            return false;
+        }
+
+        var collections = database.GetCollection<BsonDocument>(collectionsName);
+
+        if (collections.Find(currentValue).CountDocuments() == 0)
+        {
+            return false;
+        }
+
+        collections.UpdateOne(currentValue, newValue);
+
         return true;
     }
 }

@@ -10,12 +10,12 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder
     .Services.AddSingleton(new MongoClient("mongodb://localhost:27017"))
     .AddSingleton<Logger>()
-    .AddSingleton<MongoDBUserService>();
+    .AddSingleton<MongoDatabaseUserService>();
 
 var app = builder.Build();
 
 var mongoClient = app.Services.GetService<MongoClient>();
-var mongoDBUserService = app.Services.GetService<MongoDBUserService>();
+var mongoDBUserService = app.Services.GetService<MongoDatabaseUserService>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
