@@ -9,7 +9,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder
     .Services.AddSingleton(new MongoClient("mongodb://localhost:27017"))
-    .AddSingleton<Logger>()
+    .AddLogging(builder => builder.AddConsole())
     .AddSingleton<MongoDatabaseUserService>();
 
 var app = builder.Build();

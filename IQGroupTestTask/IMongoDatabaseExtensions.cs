@@ -5,52 +5,52 @@ namespace IQGroupTestTask;
 
 public static class IMongoDatabaseExtensions
 {
-    public static bool HasCollection(this IMongoDatabase database, string collectionsName)
+    public static async Task<bool> HasCollectionAsync(this IMongoDatabase database, string collectionsName)
     {
-        return database.ListCollectionNames().ToList().Contains(collectionsName);
+        return (await database.ListCollectionNamesAsync()).ToList().Contains(collectionsName);
     }
 
-    public static bool TryCreateCollections(this IMongoDatabase database, string collectionsName)
+    public static async Task<bool> TryCreateCollectionsAsync(this IMongoDatabase database, string collectionsName)
     {
-        if (database.HasCollection(collectionsName))
+        if (await database.HasCollectionAsync(collectionsName))
         {
             return false;
         }
 
-        database.CreateCollection(collectionsName);
+        await database.CreateCollectionAsync(collectionsName);
         return true;
     }
 
-    public static bool TryDropCollections(this IMongoDatabase database, string collectionsName)
+    public static async Task<bool> TryDropCollectionsAsync(this IMongoDatabase database, string collectionsName)
     {
-        if (!database.HasCollection(collectionsName))
+        if (!await database.HasCollectionAsync(collectionsName))
         {
             return false;
         }
-        database.DropCollection(collectionsName);
+        await database.DropCollectionAsync(collectionsName);
         return true;
     }
 
-    public static bool TryUpdateValue(
+    public static async Task<bool> TryUpdateValueAsync(
         this IMongoDatabase database,
         string collectionsName,
         BsonDocument currentValue,
         BsonDocument newValue
     )
     {
-        if (!database.HasCollection(collectionsName))
+        if (!await database.HasCollectionAsync(collectionsName))
         {
             return false;
         }
 
         var collections = database.GetCollection<BsonDocument>(collectionsName);
 
-        if (collections.Find(currentValue).CountDocuments() == 0)
+        if ((await collections.FindAsync(currentValue)).ToList().Count() == 0)
         {
             return false;
         }
 
-        collections.UpdateOne(currentValue, newValue);
+        await collections.UpdateOneAsync(currentValue, newValue);
 
         return true;
     }

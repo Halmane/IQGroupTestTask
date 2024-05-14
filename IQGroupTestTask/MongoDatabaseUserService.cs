@@ -5,26 +5,34 @@ namespace IQGroupTestTask;
 
 public class MongoDatabaseUserService
 {
-    private readonly Logger _logger;
+    private readonly ILogger<MongoDatabaseUserService> _logger;
     private readonly MongoClient _client;
     private readonly IMongoDatabase? _database;
     private readonly IMongoCollection<BsonDocument>? _collection;
 
-    public MongoDatabaseUserService(Logger logger, MongoClient client)
+    public MongoDatabaseUserService(ILogger<MongoDatabaseUserService> logger, MongoClient client)
     {
         _logger = logger;
         _client = client;
 
         try
         {
-            _client.TryCreateDatabase("Users");
+            var tryCreateDatabase = _client.TryCreateDatabase("Users");
 
-            if (!_client.TryGetDatabase(out _database, "Users"))
+            var tryGetDatabaseAsync = _client.TryGetDatabaseAsync("Users");
+
+            Task.WaitAll(tryCreateDatabase, tryGetDatabaseAsync);
+
+            _database = tryGetDatabaseAsync.Result;
+
+            if (_database is null)
             {
                 throw new Exception("Database does not exist");
             }
 
-            _database.TryCreateCollections("user");
+            var tryCreateCollectionsAsync = _database.TryCreateCollectionsAsync("user");
+
+            Task.WaitAll(tryCreateCollectionsAsync);
 
             _collection = _database.GetCollection<BsonDocument>("user");
         }
@@ -34,9 +42,9 @@ public class MongoDatabaseUserService
         }
     }
 
-    public void AddUser(string name, string surname, out string message)
+    public async Task<string> AddUserAsync(string name, string surname)
     {
-        message = "";
+        var message = "";
         try
         {
             if (_client is null)
@@ -51,22 +59,23 @@ public class MongoDatabaseUserService
                 throw new Exception(message);
             }
             var bsonDocument = new BsonDocument { { "name", name }, { "surname", surname } };
-            var a = _collection.Find(bsonDocument).CountDocuments();
 
-            if (a != 0)
+            if ((await _collection.FindAsync(bsonDocument)).ToList().Count != 0)
             {
                 message = "User has been found";
                 throw new Exception(message);
             }
 
-            _database.GetCollection<BsonDocument>("user").InsertOne(bsonDocument);
+            await _database.GetCollection<BsonDocument>("user").InsertOneAsync(bsonDocument);
 
             message = "User has been added";
-            _logger.LogInfo(message);
+            _logger.LogInformation(message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex.Message);
         }
+
+        return message;
     }
 }

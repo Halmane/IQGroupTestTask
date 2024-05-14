@@ -5,67 +5,67 @@ namespace IQGroupTestTask;
 
 public static class MongoClientExtensions
 {
-    public static bool TryDropDatabase(this MongoClient client, string databaseName)
+    public static async Task<bool> TryDropDatabaseAsync(this MongoClient client, string databaseName)
     {
-        if (!client.HasDataBase(databaseName))
+        if (!await client.HasDataBaseAsync(databaseName))
         {
             return false;
         }
 
-        client.DropDatabase(databaseName);
+        await client.DropDatabaseAsync(databaseName);
 
         return true;
     }
 
-    public static bool TryRenameCollectionAsync(
+    public static async Task<bool> TryRenameCollectionAsync(
         this MongoClient mongoClient,
         string databaseName,
         string currentCollectionName,
         string newCollectionName
     )
     {
-        if (!mongoClient.HasDataBase(databaseName))
+        if (!await mongoClient.HasDataBaseAsync(databaseName))
         {
             return false;
         }
 
         var db = mongoClient.GetDatabase(databaseName);
 
-        if (!db.HasCollection(currentCollectionName))
+        if (!await db.HasCollectionAsync(currentCollectionName))
         {
             return false;
         }
 
-        db.RenameCollection(currentCollectionName, newCollectionName);
+        await db.RenameCollectionAsync(currentCollectionName, newCollectionName);
 
         return true;
     }
 
-    public static void RenameCollection(
+    public static async Task RenameCollectionAsync(
         this MongoClient mongoClient,
         string databaseName,
         string currentCollectionName,
         string newCollectionName
     )
     {
-        if (!mongoClient.HasDataBase(databaseName))
+        if (!await mongoClient.HasDataBaseAsync(databaseName))
         {
             throw new Exception("Database does not exist");
         }
 
         var db = mongoClient.GetDatabase(databaseName);
 
-        if (!db.HasCollection(currentCollectionName))
+        if (!await db.HasCollectionAsync(currentCollectionName))
         {
             throw new Exception("Collections does not exist");
         }
 
-        db.RenameCollection(currentCollectionName, newCollectionName);
+        await db.RenameCollectionAsync(currentCollectionName, newCollectionName);
     }
 
-    public static void CreateDatabase(this MongoClient mongoClient, string databaseName)
+    public static async Task CreateDatabaseAsync(this MongoClient mongoClient, string databaseName)
     {
-        if (mongoClient.HasDataBase(databaseName))
+        if (await mongoClient.HasDataBaseAsync(databaseName))
         {
             throw new Exception("Database already exists");
         }
@@ -73,9 +73,9 @@ public static class MongoClientExtensions
         mongoClient.GetDatabase(databaseName);
     }
 
-    public static bool TryCreateDatabase(this MongoClient mongoClient, string databaseName)
+    public static async Task<bool> TryCreateDatabase(this MongoClient mongoClient, string databaseName)
     {
-        if (!mongoClient.HasDataBase(databaseName))
+        if (!await mongoClient.HasDataBaseAsync(databaseName))
         {
             mongoClient.GetDatabase(databaseName);
             return true;
@@ -83,24 +83,20 @@ public static class MongoClientExtensions
         return false;
     }
 
-    public static bool HasDataBase(this MongoClient mongoClient, string databaseName)
+    public static async Task<bool> HasDataBaseAsync(this MongoClient mongoClient, string databaseName)
     {
-        var a = mongoClient.ListDatabaseNames();
-        return a.ToList().Contains(databaseName);
+        return (await mongoClient.ListDatabaseNamesAsync()).ToList().Contains(databaseName);
     }
 
-    public static bool TryGetDatabase(
+    public static async Task<IMongoDatabase?> TryGetDatabaseAsync(
         this MongoClient mongoClient,
-        [NotNullWhen(true)] out IMongoDatabase? mongoDatabase,
         string databaseName
     )
     {
-        mongoDatabase = null;
-        if (mongoClient.HasDataBase(databaseName))
+        if (await mongoClient.HasDataBaseAsync(databaseName))
         {
-            mongoDatabase = mongoClient.GetDatabase(databaseName);
-            return true;
+            return mongoClient.GetDatabase(databaseName);
         }
-        return false;
+        return null;
     }
 }
