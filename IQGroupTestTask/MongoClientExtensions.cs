@@ -7,7 +7,7 @@ public static class MongoClientExtensions
 {
     public static bool TryDropDatabase(this MongoClient client, string databaseName)
     {
-        if (!client.HasDataBase(databaseName)) 
+        if (!client.HasDataBase(databaseName))
         {
             return false;
         }
