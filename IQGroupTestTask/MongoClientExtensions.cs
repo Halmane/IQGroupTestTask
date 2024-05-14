@@ -5,7 +5,10 @@ namespace IQGroupTestTask;
 
 public static class MongoClientExtensions
 {
-    public static async Task<bool> TryDropDatabaseAsync(this MongoClient client, string databaseName)
+    public static async Task<bool> TryDropDatabaseAsync(
+        this MongoClient client,
+        string databaseName
+    )
     {
         if (!await client.HasDataBaseAsync(databaseName))
         {
@@ -73,7 +76,10 @@ public static class MongoClientExtensions
         mongoClient.GetDatabase(databaseName);
     }
 
-    public static async Task<bool> TryCreateDatabase(this MongoClient mongoClient, string databaseName)
+    public static async Task<bool> TryCreateDatabaseAsync(
+        this MongoClient mongoClient,
+        string databaseName
+    )
     {
         if (!await mongoClient.HasDataBaseAsync(databaseName))
         {
@@ -83,9 +89,27 @@ public static class MongoClientExtensions
         return false;
     }
 
-    public static async Task<bool> HasDataBaseAsync(this MongoClient mongoClient, string databaseName)
+    public static bool TryCreateDatabase(this MongoClient mongoClient, string databaseName)
+    {
+        if (!mongoClient.HasDataBase(databaseName))
+        {
+            mongoClient.GetDatabase(databaseName);
+            return true;
+        }
+        return false;
+    }
+
+    public static async Task<bool> HasDataBaseAsync(
+        this MongoClient mongoClient,
+        string databaseName
+    )
     {
         return (await mongoClient.ListDatabaseNamesAsync()).ToList().Contains(databaseName);
+    }
+
+    public static bool HasDataBase(this MongoClient mongoClient, string databaseName)
+    {
+        return mongoClient.ListDatabaseNames().ToList().Contains(databaseName);
     }
 
     public static async Task<IMongoDatabase?> TryGetDatabaseAsync(
@@ -98,5 +122,20 @@ public static class MongoClientExtensions
             return mongoClient.GetDatabase(databaseName);
         }
         return null;
+    }
+
+    public static bool TryGetDatabase(
+        this MongoClient mongoClient,
+        string databaseName,
+        [NotNullWhen(true)] out IMongoDatabase? database
+    )
+    {
+        database = null;
+        if (mongoClient.HasDataBase(databaseName))
+        {
+            database = mongoClient.GetDatabase(databaseName);
+            return true;
+        }
+        return false;
     }
 }

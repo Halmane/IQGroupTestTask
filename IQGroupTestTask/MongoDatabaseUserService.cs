@@ -17,22 +17,14 @@ public class MongoDatabaseUserService
 
         try
         {
-            var tryCreateDatabase = _client.TryCreateDatabase("Users");
+            _client.TryCreateDatabase("Users");
 
-            var tryGetDatabaseAsync = _client.TryGetDatabaseAsync("Users");
-
-            Task.WaitAll(tryCreateDatabase, tryGetDatabaseAsync);
-
-            _database = tryGetDatabaseAsync.Result;
-
-            if (_database is null)
+            if (!_client.TryGetDatabase("Users", out _database))
             {
                 throw new Exception("Database does not exist");
             }
 
-            var tryCreateCollectionsAsync = _database.TryCreateCollectionsAsync("user");
-
-            Task.WaitAll(tryCreateCollectionsAsync);
+            _database.TryCreateCollections("user");
 
             _collection = _database.GetCollection<BsonDocument>("user");
         }
