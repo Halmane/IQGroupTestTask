@@ -8,8 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder
-    .Services.AddSingleton(new MongoClient("mongodb://localhost:27017"))
-    .AddLogging(builder => builder.AddConsole())
+    .Services.AddLogging(builder => builder.AddConsole())
+    .AddSingleton(new MongoClient())
     .AddSingleton<MongoDatabaseUserService>();
 
 var app = builder.Build();
